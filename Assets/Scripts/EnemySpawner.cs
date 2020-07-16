@@ -29,7 +29,7 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        if(enemies.Count <0)
+        if(enemies.Count <= 0)
         {
             SpawnWave();
         }
@@ -55,7 +55,6 @@ public class EnemySpawner : MonoBehaviour
             CreateEnemy(enemyIntensity); // 적 생성 처리 실행
         }
     }
-
     private void CreateEnemy(float intensity)
     {
         // intensity를 기반으로 적의 능력치 결정
@@ -74,8 +73,14 @@ public class EnemySpawner : MonoBehaviour
 
         enemies.Add(enemy); // 생성된 적을 리스트에 추가
 
+        // 적의 onDeath 이벤트에 익명 메서드 등록
+        enemy.onDeath += () => enemies.Remove(enemy); // 사망한 적을 리스트에서 제거
+        enemy.onDeath += () => Destroy(enemy.gameObject, 10f); // 사망한 적을 10초 뒤에 파괴
+        enemy.onDeath += () => GameManager.instance.AddScore(100); // 적 사망 시 점수 상승
+
 
     }
 
+    
 }
    
