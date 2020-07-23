@@ -1,8 +1,29 @@
-﻿using System.Collections;
+﻿using Photon.Pun;
+using System.Collections;
 using UnityEngine;
 
 // 총을 구현한다
-public class Gun : MonoBehaviour {
+public class Gun : MonoBehaviourPun, IPunObservable
+{
+    // 주기적으로 자동 실행되는 동기화 메서드
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if(stream.IsWriting) // 로컬 오브젝트라면 쓰기 부분이 실행됨
+        {
+            stream.SendNext(ammoRemain); // 남은 탄알 수를 네트워크를 통해 보내기
+            stream.SendNext(magAmmo); // 탄창의 탄알 수를 네트워크를 통해 보내기
+            stream.SendNext(state); // 현재 총의 상태를 네트워크를 통해 보내기
+        }
+        else
+        {
+            // 리모트 오브젝트라면 읽기 부분이 실행 됨
+            ammoRemain = (int)stream.ReceiveNext(); // 남은 탄알 수를 네트워크를 통해 받기
+            magAmmo = (int)stream.ReceiveNext(); // 탄창의 탄알 수를 네트워크를 통해 받기
+            state = (State)stream.ReceiveNext(); // 현재 총의 상태를 네트워크를 통해 받기
+        }
+    }
+
+
     // 총의 상태를 표현하는데 사용할 타입을 선언
     public enum State
     {
