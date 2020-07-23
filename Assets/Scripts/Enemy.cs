@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI; // AI, 내비게이션 시스템 관련 코드를 가져오기
+using Photon.Pun;
 
 // 적 AI를 구현한다
 public class Enemy : LivingEntity
@@ -45,7 +46,7 @@ public class Enemy : LivingEntity
         enemyRenderer = GetComponentInChildren<Renderer>(); // 렌더러 컴포넌트는 자식 게임오브젝트에 있음
     }
 
-    
+    [PunRPC]
     public void Setup(float newHealth, float newDamage, float newSpeed, Color skinColor) // 적 AI의 초기 스펙을 결정하는 셋업 메서드
     {
         startingHealth = newHealth; // 체력 설정
@@ -57,11 +58,23 @@ public class Enemy : LivingEntity
 
     private void Start()
     {
+        if(!PhotonNetwork.IsMasterClient) // 호스트가 아니라면 AI의 추적 루틴을 실행하지 않음
+        {
+            return;
+        }
+
         StartCoroutine(UpdatePath()); // 게임 오브젝트 활성화와 동시에 AI의 추적 루틴 시작
     }
 
     private void Update()
     {
+        // 호스트가 아니라면 애니메이션의 파라미터를 직접 갱신하지 않음
+        // 호스트가 파라미터를 갱신하면 클라이언트에 자동으로 전달되기 때문
+        if(!PhotonNetwork.IsMasterClient)
+        {
+            return;
+        }
+
         enemyAnimator.SetBool("HasTarget", hasTarget); // 추적 대상의 존재 여부에 따라 다른 애니메이션을 재생
     }
 
@@ -100,6 +113,7 @@ public class Enemy : LivingEntity
         }
     }
 
+    [PunRPC]
     public override void OnDamage(float damage, Vector3 hitPoint, Vector3 hitNormal)
     {
 
@@ -136,8 +150,13 @@ public class Enemy : LivingEntity
         enemyAudioPlayer.PlayOneShot(deathSound); // 사망 효과음 재생
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
+        if(!PhotonNetwork.IsMasterClient) // 호스트가 아니라면 공격 실행 불가
+        {
+            return;
+        }
+
         if(!dead && Time.time >= lastAttackTime + timeBetAttack ) // 자신이 사망하지 않았으며, 최근 공격 시점에서 timeBetAttack 이상 시간이 지났다면 공격 가능
         {
             LivingEntity attackTarget = other.GetComponent<LivingEntity>(); // 상대방의 LivingEntity 타입 가져오기

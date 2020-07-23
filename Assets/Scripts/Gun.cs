@@ -5,25 +5,6 @@ using UnityEngine;
 // 총을 구현한다
 public class Gun : MonoBehaviourPun, IPunObservable
 {
-    // 주기적으로 자동 실행되는 동기화 메서드
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        if(stream.IsWriting) // 로컬 오브젝트라면 쓰기 부분이 실행됨
-        {
-            stream.SendNext(ammoRemain); // 남은 탄알 수를 네트워크를 통해 보내기
-            stream.SendNext(magAmmo); // 탄창의 탄알 수를 네트워크를 통해 보내기
-            stream.SendNext(state); // 현재 총의 상태를 네트워크를 통해 보내기
-        }
-        else
-        {
-            // 리모트 오브젝트라면 읽기 부분이 실행 됨
-            ammoRemain = (int)stream.ReceiveNext(); // 남은 탄알 수를 네트워크를 통해 받기
-            magAmmo = (int)stream.ReceiveNext(); // 탄창의 탄알 수를 네트워크를 통해 받기
-            state = (State)stream.ReceiveNext(); // 현재 총의 상태를 네트워크를 통해 받기
-        }
-    }
-
-
     // 총의 상태를 표현하는데 사용할 타입을 선언
     public enum State
     {
@@ -56,6 +37,32 @@ public class Gun : MonoBehaviourPun, IPunObservable
     public float reloadTime = 1.8f; // 재장전 소요 시간
     private float lastFireTime; // 총을 마지막으로 발사한 시점(연사 구현시 사용)
 
+
+    // 주기적으로 자동 실행되는 동기화 메서드
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if(stream.IsWriting) // 로컬 오브젝트라면 쓰기 부분이 실행됨
+        {
+            stream.SendNext(ammoRemain); // 남은 탄알 수를 네트워크를 통해 보내기
+            stream.SendNext(magAmmo); // 탄창의 탄알 수를 네트워크를 통해 보내기
+            stream.SendNext(state); // 현재 총의 상태를 네트워크를 통해 보내기
+        }
+        else
+        {
+            // 리모트 오브젝트라면 읽기 부분이 실행 됨
+            ammoRemain = (int)stream.ReceiveNext(); // 남은 탄알 수를 네트워크를 통해 받기
+            magAmmo = (int)stream.ReceiveNext(); // 탄창의 탄알 수를 네트워크를 통해 받기
+            state = (State)stream.ReceiveNext(); // 현재 총의 상태를 네트워크를 통해 받기
+        }
+    }
+
+    [PunRPC] 
+    public void AddAmmo(int ammo) // 남은 탄알을 추가하는 메서드
+    {
+        ammoRemain += ammo;
+    }
+   
+
     private void Awake() 
     {
         // 사용할 컴포넌트의 참조 가져오기
@@ -85,15 +92,27 @@ public class Gun : MonoBehaviourPun, IPunObservable
 
     private void Shot()
     {
+        photonView.RPC("ShotProcessOnServer", RpcTarget.MasterClient); // 실제 처리는 호스트에 대리
+
+        magAmmo--; // 남은 탄환 수를 -1
+        if(magAmmo <=0)
+        {
+            state = State.Empty; // 탄창에 남은 탄알이 없다면 총의 현재 상태를 Empty로 갱신
+        }               
+    }
+
+    [PunRPC]
+    private void ShotProcessOnServer()
+    {
         RaycastHit hit; // 레이캐스트에 의한 충돌 정보를 저장하는 컨테이너
 
         Vector3 hitPosition = Vector3.zero; // 탄알이 맞은 곳을 저장할 변수
 
-        if(Physics.Raycast(fireTransform.position, fireTransform.forward, out hit, fireDistance)) // 레이캐스트(시작점, 방향, 충돌 정보 컨테이너, 사정거리)
+        if (Physics.Raycast(fireTransform.position, fireTransform.forward, out hit, fireDistance)) // 레이캐스트(시작점, 방향, 충돌 정보 컨테이너, 사정거리)
         {
             IDamageable target = hit.collider.GetComponentInParent<IDamageable>(); // 충돌한 상대방으로부터 IDamageable 오브젝트 가져오기
 
-            if(target != null) // 상대방으로부터 IDamageable 오브젝트를 가져오는데 성공했다면
+            if (target != null) // 상대방으로부터 IDamageable 오브젝트를 가져오는데 성공했다면
             {
                 target.OnDamage(damage, hit.point, hit.normal); // 상대방의 OnDamage 함수를 실행시켜 상대방에 대미지 주기
             }
@@ -105,15 +124,13 @@ public class Gun : MonoBehaviourPun, IPunObservable
             hitPosition = fireTransform.position + fireTransform.forward * fireDistance; // 탄알이 최대 사정거리까지 날아갔을 때의 위치를 충돌 위치로 사용
         }
 
-        StartCoroutine(ShotEffect(hitPosition)); // hitPosition에 발사 이펙트 재생 시작
+        photonView.RPC("ShotEffectProcessOnClients", RpcTarget.All, hitPosition); // 발사 이펙트 재생. 이펙트 재생은 모든 클라이언트에서 실행
+    }
 
-        magAmmo--; // 남은 탄알 수를 -1
-        if(magAmmo <=0)
-        {
-            state = State.Empty; // 탄창에 남은 탄알이 없다면 총의 현재 상태를 Enpty로 갱신
-        }
-
-       
+    [PunRPC]
+    private void ShotEffectProcessOnClients(Vector3 hitPosition) // 이펙트 재생 코루틴을 랩핑하는 메서드
+    {
+        StartCoroutine(ShotEffect(hitPosition));
     }
 
     private IEnumerator ShotEffect(Vector3 hitPositon) // 발사 이펙트와 소리를 재생하고 탄알 궤적을 그림

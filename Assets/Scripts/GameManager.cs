@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using Photon.Pun;
+using UnityEngine.SceneManagement;
 
 // 점수와 게임 오버 여부를 관리하는 게임 매니저
 public class GameManager : MonoBehaviour
@@ -18,6 +20,8 @@ public class GameManager : MonoBehaviour
     }
 
     private static GameManager m_instance; // 싱글턴이 할당될 static 변수
+
+    public GameObject playerPrefab; // 생성할 프레이어 캐릭터 프리팹
 
     private int score = 0; // 현재 게임 점수
     public bool isGameover { get; private set; } // 게임오버 상태
