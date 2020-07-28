@@ -4663,9 +4663,9 @@ GameObject:
   - component: {fileID: 5915869860243368801}
   - component: {fileID: 5915869860243368805}
   - component: {fileID: 5915869860243368804}
-  - component: {fileID: 7596968963135959551}
-  - component: {fileID: 4656414362165696497}
-  - component: {fileID: 3204681619894298431}
+  - component: {fileID: 1271665851219169599}
+  - component: {fileID: 4109568688653134508}
+  - component: {fileID: 6074429680055019011}
   m_Layer: 0
   m_Name: Zombie
   m_TagString: Untagged
@@ -4874,7 +4874,7 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &7596968963135959551
+--- !u!114 &1271665851219169599
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4892,12 +4892,12 @@ MonoBehaviour:
   Synchronization: 2
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 4656414362165696497}
-  - {fileID: 3204681619894298431}
+  - {fileID: 4109568688653134508}
+  - {fileID: 6074429680055019011}
   viewIdField: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &4656414362165696497
+--- !u!114 &4109568688653134508
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4912,7 +4912,7 @@ MonoBehaviour:
   m_SynchronizePosition: 1
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
---- !u!114 &3204681619894298431
+--- !u!114 &6074429680055019011
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4931,10 +4931,10 @@ MonoBehaviour:
     SynchronizeType: 0
     Name: Die
   - Type: 4
-    SynchronizeType: 1
+    SynchronizeType: 0
     Name: HasTarget
   m_SynchronizeLayers:
-  - SynchronizeType: 2
+  - SynchronizeType: 0
     LayerIndex: 0
 --- !u!1 &5915869860581798008
 GameObject:

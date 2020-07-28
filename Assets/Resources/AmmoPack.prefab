@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 108646884597796964}
   - component: {fileID: 114923613129635330}
   - component: {fileID: 114448886708327992}
-  - component: {fileID: 1556596775507713259}
+  - component: {fileID: 6040618631660985768}
   m_Layer: 0
   m_Name: AmmoPack
   m_TagString: Untagged
@@ -135,7 +135,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ammo: 30
---- !u!114 &1556596775507713259
+--- !u!114 &6040618631660985768
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -154,7 +154,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 0}
-  viewIdField: 1
+  viewIdField: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
 --- !u!1 &1496639653374222

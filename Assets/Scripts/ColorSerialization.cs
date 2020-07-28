@@ -7,7 +7,7 @@ public class ColorSerialization
 {
     public static byte[] SerializeColor(object targetObject)
     {
-        Color color = (Color)targetObject;
+        Color color = (Color) targetObject;
 
         Quaternion colorToQuaterinon = new Quaternion(color.r, color.g, color.b, color.a);
         byte[] bytes = Protocol.Serialize(colorToQuaterinon);
@@ -15,9 +15,8 @@ public class ColorSerialization
         return bytes;
     }
 
-    public static object DeserializeColor(byte[] bytes)
-    {
-        Quaternion quaterinon = (Quaternion)Protocol.Deserialize(bytes);
+    public static object DeserializeColor(byte[] bytes) {
+        Quaternion quaterinon = (Quaternion) Protocol.Deserialize(bytes);
 
         Color color = new Color(quaterinon.x, quaterinon.y, quaterinon.z, quaterinon.w);
 
